@@ -1,0 +1,13 @@
+{
+  "name": "sih-2026-project-monitoring-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd frontend && npm install",
+    "dev": "node start.js",
+    "start": "node start.js",
+    "build": "cd frontend && npm run build",
+    "backend": "node backend/server.js",
+    "frontend": "cd frontend && npm run dev"
+  }
+}
