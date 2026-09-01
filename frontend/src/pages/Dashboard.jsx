@@ -16,6 +16,7 @@ export function Dashboard({ user, onOpenAddProject, onOpenMonthlyUpdate }) {
   const [data, setData] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +26,7 @@ export function Dashboard({ user, onOpenAddProject, onOpenMonthlyUpdate }) {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [overview, alertsList] = await Promise.all([
         api.getAnalyticsOverview(),
         api.getAlerts()
@@ -33,15 +35,28 @@ export function Dashboard({ user, onOpenAddProject, onOpenMonthlyUpdate }) {
       setAlerts(alertsList.slice(0, 5)); // Latest 5 alerts
     } catch (err) {
       console.error('Error loading dashboard:', err);
+      setError(err.message || 'Failed to load dashboard data. Please verify the backend is running.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
         Loading project monitoring dashboard...
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#EF4444' }}>
+        <h3>Error Loading Dashboard</h3>
+        <p>{error || 'No data available.'}</p>
+        <button className="btn btn-primary" onClick={loadDashboardData} style={{ marginTop: '16px' }}>
+          Retry
+        </button>
       </div>
     );
   }

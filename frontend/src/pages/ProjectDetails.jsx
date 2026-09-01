@@ -28,6 +28,8 @@ export function ProjectDetails({ user, onOpenMonthlyUpdate }) {
   const [newMDueDate, setNewMDueDate] = useState('');
   const [newMDesc, setNewMDesc] = useState('');
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     loadProjectDetails();
   }, [id]);
@@ -35,18 +37,20 @@ export function ProjectDetails({ user, onOpenMonthlyUpdate }) {
   const loadProjectDetails = async () => {
     try {
       setLoading(true);
-      const [p, history, m, r] = await Promise.all([
+      setError(null);
+      const [projData, histData, milestonesData, r] = await Promise.all([
         api.getProjectById(id),
         api.getProgressHistory(id),
         api.getMilestones(id),
         api.getProjectRisk(id)
       ]);
-      setProject(p);
-      setProgressHistory(history);
-      setMilestones(m);
+      setProject(projData);
+      setProgressHistory(histData);
+      setMilestones(milestonesData);
       setRiskData(r);
     } catch (err) {
       console.error('Error loading project details:', err);
+      setError(err.message || 'Failed to load project details.');
     } finally {
       setLoading(false);
     }
@@ -84,10 +88,22 @@ export function ProjectDetails({ user, onOpenMonthlyUpdate }) {
     }
   };
 
-  if (loading || !project) {
+  if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
-        Loading project details...
+        Loading comprehensive project details...
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#EF4444' }}>
+        <h3>Error Loading Project Details</h3>
+        <p>{error || 'Project not found.'}</p>
+        <button className="btn btn-secondary" onClick={() => navigate('/projects')} style={{ marginTop: '16px' }}>
+          Back to Projects
+        </button>
       </div>
     );
   }

@@ -10,6 +10,8 @@ export function Analytics() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     loadAnalytics();
   }, [department]);
@@ -17,19 +19,33 @@ export function Analytics() {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await api.getAnalyticsOverview(department !== 'All' ? department : null);
-      setData(res);
+      setError(null);
+      const analyticsData = await api.getAnalyticsOverview(department === 'All' ? null : department);
+      setData(analyticsData);
     } catch (err) {
-      console.error('Error fetching analytics:', err);
+      console.error('Error loading analytics:', err);
+      setError(err.message || 'Failed to load analytics data.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
-        Loading portfolio analytics...
+        Loading advanced portfolio analytics...
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#EF4444' }}>
+        <h3>Error Loading Analytics</h3>
+        <p>{error || 'No data available.'}</p>
+        <button className="btn btn-primary" onClick={loadAnalytics} style={{ marginTop: '16px' }}>
+          Retry
+        </button>
       </div>
     );
   }
