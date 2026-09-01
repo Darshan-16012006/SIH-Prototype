@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: sih-monitoring-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm init -y || true
+    startCommand: node server.js
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/sih_monitoring.db

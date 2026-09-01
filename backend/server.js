@@ -5,12 +5,19 @@ const url = require('node:url');
 const { DatabaseSync } = require('node:sqlite');
 
 const PORT = process.env.PORT || 8000;
-const DB_PATH = path.join(__dirname, 'sih_monitoring.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'sih_monitoring.db');
 
 // Ensure Database connection
 let db;
 try {
+  // If the DB doesn't exist at DB_PATH but we have a default one, copy it (useful for persistent volumes)
+  const defaultDbPath = path.join(__dirname, 'sih_monitoring.db');
+  if (DB_PATH !== defaultDbPath && !fs.existsSync(DB_PATH) && fs.existsSync(defaultDbPath)) {
+    fs.copyFileSync(defaultDbPath, DB_PATH);
+    console.log(`Copied default database to ${DB_PATH}`);
+  }
   db = new DatabaseSync(DB_PATH);
+  console.log(`Connected to database at ${DB_PATH}`);
 } catch (err) {
   console.error('Failed to open sqlite database:', err);
   process.exit(1);
@@ -545,6 +552,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`\x1b[32m%s\x1b[0m`, `SIH 2026 Project Monitoring Backend API running on http://127.0.0.1:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`\x1b[32m%s\x1b[0m`, `SIH 2026 Project Monitoring Backend API running on port ${PORT}`);
 });
